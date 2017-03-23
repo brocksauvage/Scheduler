@@ -21,6 +21,7 @@ typedef struct _priqueue_t
 	int size;
 	p_node_t *front;
 	int (*comparer) (const void*, const void *);
+	p_node_t *back;
 } priqueue_t;
 
 
