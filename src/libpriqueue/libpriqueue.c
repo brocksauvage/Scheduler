@@ -36,7 +36,7 @@ int priqueue_offer(priqueue_t *q, void *ptr)
 {
 	p_node_t *node = malloc (sizeof(ptr));
 	memset(node, 0, sizeof(ptr));
-	node = ptr;
+	node->job = ptr;
 
 	if(priqueue_size(q) == 0)
 	{
@@ -89,20 +89,8 @@ void *priqueue_poll(priqueue_t *q)
 	{
 		return NULL;
 	}
-	else if(priqueue_size(q) == 1)
-	{
-		free(&q->front);
-		q->front = NULL;
-		q->back = NULL;
-		q->size--;
-		return(NULL);
-	}
 	else
 	{
-		p_node_t *temp = q->front->prev;
-		temp->next = NULL;
-		free(&q->front);
-		q->size--;
 		return (&q->front);
 	}
 }

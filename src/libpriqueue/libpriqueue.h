@@ -9,10 +9,7 @@
 */
 typedef struct p_node_t
 {
-	int pid;
-	int priority;
-	int arrival_time;
-	int burst_time;
+	void *job;
 	void *next;
 	void *prev;
 } p_node_t;
