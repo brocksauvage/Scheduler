@@ -21,7 +21,6 @@ void priqueue_init(priqueue_t *q, int(*comparer)(const void *, const void *))
 {
 	q->size = 0;
 	q->front = NULL;
-	q->back = NULL;
 }
 
 
@@ -36,21 +35,28 @@ int priqueue_offer(priqueue_t *q, void *ptr)
 {
 	p_node_t *node = malloc (sizeof(ptr));
 	memset(node, 0, sizeof(ptr));
-	node = ptr;
+	node->job = ptr;
 
 	if(priqueue_size(q) == 0)
 	{
 		q->front = node;
-		q->back = node;
 		q->size++;
 		return 0;
 	}
-	else if(priqueue_size(q) == 1)
+	else
 	{
 
+		int index = 0;
+		p_node_t *temp = q->front;
+		while(temp->next != NULL)
+		{
+			temp = temp->next;
+			index++;
+		}
+		temp->next = node;
+		q->size++;
+		return index;
 	}
-
-	return -1;
 }
 
 
@@ -89,21 +95,13 @@ void *priqueue_poll(priqueue_t *q)
 	{
 		return NULL;
 	}
-	else if(priqueue_size(q) == 1)
-	{
-		free(&q->front);
-		q->front = NULL;
-		q->back = NULL;
-		q->size--;
-		return(NULL);
-	}
 	else
 	{
-		p_node_t *temp = q->front->prev;
-		temp->next = NULL;
-		free(&q->front);
+		p_node_t *temp = q->front;
+		q->front = q->front->next;
+		free(temp);
 		q->size--;
-		return (&q->front);
+		return (q->front);
 	}
 }
 
@@ -155,7 +153,44 @@ void *priqueue_at(priqueue_t *q, int index)
  */
 int priqueue_remove(priqueue_t *q, void *ptr)
 {
-	return 0;
+	if(priqueue_size(q) == 0)
+	{
+		return 0;
+	}
+	else if(priqueue_size(q) == 1)
+	{
+		priqueue_poll(q);
+	}
+	else
+	{
+		int removals = 0;
+		p_node_t *temp = q->front;
+		p_node_t *temp2 = temp;
+		while(temp->next != NULL)
+		{
+			if(temp->job == ptr)
+			{
+				if(temp == q->front)
+				{
+					priqueue_poll(q);
+				}
+				else if(temp->next == NULL)
+				{
+					temp2->next = NULL;
+					free(temp);
+					q->size--;
+				}
+				else
+				{
+					temp2 -> next = temp->next;
+					free(temp);
+					q->size--;
+				}
+			}
+			temp2 = temp;
+			temp = temp->next;
+		}
+	}
 }
 
 
@@ -179,7 +214,6 @@ void *priqueue_remove_at(priqueue_t *q, int index)
 	{
 		free(&q->front);
 		q->front = NULL;
-		q->back = NULL;
 		q->size--;
 	}
 	else
@@ -213,6 +247,7 @@ void *priqueue_remove_at(priqueue_t *q, int index)
         q->size--;
       }
     }
+
 	}
 	return 0;
 }
