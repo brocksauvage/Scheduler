@@ -21,7 +21,6 @@ void priqueue_init(priqueue_t *q, int(*comparer)(const void *, const void *))
 {
 	q->size = 0;
 	q->front = NULL;
-	q->back = NULL;
 }
 
 
@@ -41,16 +40,22 @@ int priqueue_offer(priqueue_t *q, void *ptr)
 	if(priqueue_size(q) == 0)
 	{
 		q->front = node;
-		q->back = node;
 		q->size++;
 		return 0;
 	}
-	else if(priqueue_size(q) == 1)
+	else
 	{
-		
+		int index = 0;
+		p_node_t *temp = q->front;
+		while(temp->next != NULL)
+		{
+			temp = temp->next;
+			index++;
+		}
+		temp->next = node;
+		q->size++;
+		return index;
 	}
-
-	return -1;
 }
 
 
@@ -146,7 +151,6 @@ void *priqueue_remove_at(priqueue_t *q, int index)
 	{
 		free(&q->front);
 		q->front = NULL;
-		q->back = NULL;
 		q->size--;
 	}
 	else
@@ -155,18 +159,11 @@ void *priqueue_remove_at(priqueue_t *q, int index)
 		
 		while(index > 0)
 		{
-			temp = temp->prev;
-			index--;
+			//temp = temp->prev;
+			//index--;
 		}
 		
-		if(temp == q->back)
-		{
-			/*q->back = temp->next;
-			temp->next->prev = NULL;
-			free(temp);
-			q->size--;*/
-		}
-		else if(temp == q->front)
+		if(temp == q->front)
 		{
 			/*q->front = temp->prev;
 			temp->prev->next = NULL;

@@ -11,7 +11,6 @@ typedef struct p_node_t
 {
 	void *job;
 	void *next;
-	void *prev;
 } p_node_t;
 
 /**
@@ -21,7 +20,6 @@ typedef struct _priqueue_t
 {
 	int size;
 	p_node_t *front;
-	p_node_t *back;
 } priqueue_t;
 
 
