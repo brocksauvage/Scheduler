@@ -156,7 +156,7 @@ void *priqueue_remove_at(priqueue_t *q, int index)
 	
 	if(priqueue_size(q) == 1)
 	{
-		free(&q->front);
+		free(q->front);
 		q->front = NULL;
 		q->back = NULL;
 		q->size--;
@@ -173,18 +173,17 @@ void *priqueue_remove_at(priqueue_t *q, int index)
 		
 		if(temp == q->back)
 		{
-			/*q->back = temp->next;
+			q->back = temp->next;
 			temp->next->prev = NULL;
 			free(temp);
-			q->size--;*/
+			q->size--;
 		}
 		else if(temp == q->front)
 		{
-			/*q->front = temp->prev;
+			q->front = temp->prev;
 			temp->prev->next = NULL;
 			free(temp);
-			q->size--;*/
-		}
+			q->size--;
 	}
 	return 0;
 }
@@ -209,9 +208,9 @@ int priqueue_size(priqueue_t *q)
  */
 void priqueue_destroy(priqueue_t *q)
 {
-	while(&q->front != NULL)
+	while(q->front != NULL)
 	{
-		priqueue_poll(&q);
+		priqueue_poll(q);
 	}
-	free(&q);
+	free(q);
 }
