@@ -96,7 +96,11 @@ void *priqueue_poll(priqueue_t *q)
 	}
 	else
 	{
-		return (&q->front);
+		p_node_t *temp = q->front;
+		q->front = q->front->next;
+		free(temp);
+		q->size--;
+		return (q->front);
 	}
 }
 
@@ -127,7 +131,44 @@ void *priqueue_at(priqueue_t *q, int index)
  */
 int priqueue_remove(priqueue_t *q, void *ptr)
 {
-	return 0;
+	if(priqueue_size(q) == 0)
+	{
+		return 0;
+	}
+	else if(priqueue_size(q) == 1)
+	{
+		priqueue_poll(q);
+	}
+	else
+	{
+		int removals = 0;
+		p_node_t *temp = q->front;
+		p_node_t *temp2 = temp;
+		while(temp->next != NULL)
+		{
+			if(temp->job == ptr)
+			{
+				if(temp == q->front)
+				{
+					priqueue_poll(q);
+				}
+				else if(temp->next == NULL)
+				{
+					temp2->next = NULL;
+					free(temp);
+					q->size--;
+				}
+				else
+				{
+					temp2 -> next = temp->next;
+					free(temp);
+					q->size--;
+				}
+			}
+			temp2 = temp;
+			temp = temp->next;
+		}
+	}
 }
 
 
