@@ -37,10 +37,9 @@ int priqueue_offer(priqueue_t *q, void *ptr)
 	p_node_t *node = malloc (sizeof(p_node_t));
 	node->job = ptr;
 	node->next = NULL;
+	int index = 0;
 
-	int val = *((int *) node -> job);
-	printf("%d", val);
-	//node->prev = NULL;
+	//If the size of the queue is zero
 	if(priqueue_size(q) == 0)
 	{
 		q->front = node;
@@ -48,57 +47,63 @@ int priqueue_offer(priqueue_t *q, void *ptr)
 		q->size++;
 		return 0;
 	}
+	//If the size of the queue is 1
 	else if(priqueue_size(q) == 1)
 	{
-		if(q->comparer(node->job, q->front) < 0)
+		//check the existing node for priority. If input node is higher, swap.
+		if(q->comparer(node->job, q->front->job) < 0)
 		{
 			node->next = q->front;
 			q->front = node;
 			q->back = node->next;
+			q->size++;
+			return 0;
 		}
 		else
 		{
-				q->front->next = node;
-				q->back = node;
-		}
+			q->front->next = node;
+			q->back = node;
 			q->size++;
 			return 1;
+		}
 	}
 	else
 	{
-		int index = 0;
 		p_node_t *temp = q->front;
-		p_node_t *temp2 =q->front;
-		while(temp->next != NULL)
-		{
-			temp2 = temp;		
-			//printf("%d", temp2->job);
-			if(q->comparer(node, temp) < 0)
+		p_node_t *temp2 = q->front;
+		//Interate through the queue
+		while(temp != NULL)
+		{	
+			//compare for higher priority
+			if(q->comparer((ptr), (temp->job)) < 0)
 			{
-
-				printf("%s", "inside ");
-				break;
-			}	
+				//if at the front of the queue
+				if(temp == q->front)
+				{
+					node->next = q->front;
+					q->front = node;
+					q->size++;
+					return 0;
+				}
+				else
+				{
+					node->next = temp;
+					temp2->next = node;
+					q->size++;
+					return index;
+				}
+			}
+			temp2 = temp;
 			temp = temp->next;
 			index++;
-			printf("%s", "here ");
-
 		}
-
-		if(temp->next == NULL)
+		//if we have made it to the back without a swap
+		if(temp == NULL)
 		{
-			temp->next = node;
+			temp2 -> next = node;
 			q->size++;
-			printf("%s", "outside1\n");
+			index++;
 		}
-		else
-		{
-			node->next = temp;
-			temp2->next = node;
-			q->size++;
-			printf("%s", "outside2\n");
-		}
-		printf("%s", "finished\n");
 		return index;
 	}
 }
@@ -135,14 +140,6 @@ void *priqueue_peek(priqueue_t *q)
  */
 void *priqueue_poll(priqueue_t *q)
 {
-	p_node_t *temp = q->front;
-	while(temp->next != NULL)
-	{
-		int val = *((int *) temp -> job);
-		printf("%d", val);
-		temp = temp->next;
-	}	
-	printf("%s", "poll\n");
 	if(priqueue_size(q) == 0)
 	{
 		return NULL;
@@ -176,7 +173,7 @@ void *priqueue_at(priqueue_t *q, int index)
 
 	if(index == 0)
 	{
-	   return(q->front);
+	   return(q->front->job);
 	}
 	else
 	{
@@ -187,10 +184,9 @@ void *priqueue_at(priqueue_t *q, int index)
   		temp = temp->next;
   		index--;
   	}
-    return(temp);
+    return(temp->job);
 
 	}
-	return 0;
 }
 
 
@@ -205,62 +201,37 @@ void *priqueue_at(priqueue_t *q, int index)
  */
 int priqueue_remove(priqueue_t *q, void *ptr)
 {
-	printf("In remove");
-	
-	/*printf("%s", "remove\n");
 	if(priqueue_size(q) == 0)
 	{
 		return 0;
-	}
-	else if(priqueue_size(q) == 1)
-	{
-		priqueue_poll(q);
-		return (1);
 	}
 	else
 	{
 		int removals = 0;
 		p_node_t *temp = q->front;
-		p_node_t *temp2;
-		while(temp->next != NULL)
+		p_node_t *temp2 = q->front;
+
+		while(temp != NULL)
 		{
-			temp2 = temp;
-			//printf("while");
 			if(temp->job == ptr)
 			{
-				printf("job pointer");
 				if(temp == q->front)
 				{
-					temp = priqueue_poll(q);
-					printf("first branch");
-					removals++;
-				}
-				else if(temp->next == NULL)
-				{
-					printf("%s", "else if\n");
-					temp2->next = NULL;
-					free(temp);
-					q->size--;
-					removals++;
-					return removals;
+					q->front = temp2 -> next;
+					temp2 = q->front;
 				}
 				else
 				{
-								printf("%s", "else\n");
 					temp2 -> next = temp->next;
-					free(temp);
-					q->size--;
-					removals++;
 				}
+				free(temp);
+				q->size--;
+				removals++;
 			}
-			else
-			{
-				temp = temp->next;
-			}
-
+			temp = temp->next;
 		}
 		return (removals);
-	}*/
+	}
 }
 
 
@@ -275,7 +246,7 @@ int priqueue_remove(priqueue_t *q, void *ptr)
  */
 void *priqueue_remove_at(priqueue_t *q, int index)
 {
-	if(index > priqueue_size(q) || index < 0)
+	if(index >= priqueue_size(q) || index < 0)
 	{
 		return NULL;
 	}
@@ -342,9 +313,11 @@ int priqueue_size(priqueue_t *q)
  */
 void priqueue_destroy(priqueue_t *q)
 {
+	p_node_t * temp = q->front;
 	while(q->front != NULL)
 	{
-		priqueue_poll(q);
+		q->front = temp->next;
+		free(temp);
+		temp = q->front;
 	}
-	free(q);
 }
