@@ -4,14 +4,16 @@
 #ifndef LIBPRIQUEUE_H_
 #define LIBPRIQUEUE_H_
 
+typedef struct p_node_t p_node_t;
 /**
 	Process Nodes
 */
-typedef struct p_node_t
+struct p_node_t
 {
 	void *job;
-	void *next;
-} p_node_t;
+	p_node_t *next;
+	//p_node_t *prev;
+};
 
 /**
   Priqueue Data Structure
