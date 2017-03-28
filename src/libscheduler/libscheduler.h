@@ -17,6 +17,9 @@ typedef struct _job_t
   int priority;
   int process_time;
   int arrival_time;
+  int response_time;
+  int prev_time;
+  int initial_time;
   int pid;
 } job_t;
 

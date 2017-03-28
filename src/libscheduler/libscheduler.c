@@ -108,12 +108,21 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
+	job_t *old_job = malloc(num_cores * sizeof(job_t));
+
+	old_job->pid = job_number;
+	old_job->running_time = running_time;
+	old_job->process_time = running_time;
+	old_job->arrival_time = time;
+	old_job->priority = priority;
+
   int idle_core;
   for(int i = 0; i < num_cores; i++)
   {
     if(core_arr[i] == NULL)
     {
       idle_core = i;
+			break;
     }
     else
     {
@@ -122,17 +131,82 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   }
   if(idle_core == -1)
   {
+		core_arr[idle_core] = old_job;
+		core_arr[idle_core]->response_time = time = core_arr[idle_core]->arrival_time;
 
+		if(type == PSJF)
+		{
+			core_arr[idle_core]->prev_time = time;
+		}
+		return(idle_core);
   }
   else if(type == PSJF)
   {
+		int longest_time = -1;
+		int longest_index = 0;
+		for(int i = 0; i < num_cores; i ++)
+		{
+			core_arr[i]->process_time = core_arr[i]->process_time - (time - core_arr[i]->prev_time);
+			core_arr[i]->prev_time = time;
+			if(core_arr[i]->process_time > longest_time)
+			{
+				longest_time = core_arr[i]->process_time;
+				longest_index = i;
+			}
 
+		}
+		if(running_time < longest_time)
+		{
+			if(core_arr[longest_index]->response_time == (time - core_arr[longest_index]->arrival_time))
+			{
+				core_arr[longest_index]->response_time = -1;
+			}
+			priqueue_offer(&q, core_arr[longest_index]);
+			core_arr[longest_index] = old_job;
+			if(core_arr[longest_index]->response_time == -1)
+			{
+				core_arr[longest_index] = time - core_arr[longest_index]->arrival_time;
+			}
+			return(longest_index);
+		}
   }
   else if(type == PPRI)
   {
+		int lowest_priority = core_arr[0]->priority;
+		int lowest_core;
+		for(int i =0; i < num_cores; i++)
+		{
 
-  }
-	return -1;
+			if(core_arr[i]->priority > lowest_priority)
+	    {
+	       lowest_priority = core_arr[i]->priority;
+	       lowest_core = i;
+	    }
+	    else if(core_arr[i]->priority == lowest_priority && core_arr[i]->arrival_time > core_arr[lowest_core]->arrival_time)
+	    {
+	       lowest_core = i;
+	     }
+	  }
+
+	  if(lowest_priority > old_job->priority)
+	  {
+	   if(core_arr[lowest_core]->response_time == time - core_arr[lowest_core]->arrival_time)
+	   {
+	     core_arr[lowest_core]->response_time = -1;
+	   }
+     priqueue_offer(&q, core_arr[lowest_core]);
+     core_arr[lowest_core] = old_job;
+     if(core_arr[lowest_core]->response_time == -1)
+     {
+      core_arr[lowest_core]->response_time = time - core_arr[lowest_core]->arrival_time;
+	   }
+
+	    return lowest_core;
+	  }
+	}
+
+	   priqueue_offer(&q, old_job);
+	   return -1;
 }
 
 
@@ -152,7 +226,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
-  //wait_time +=
+  //wait_time += time
   //turnaround_time +=
   //response_time +=
   num_jobs++;
