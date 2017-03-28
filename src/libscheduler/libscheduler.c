@@ -20,13 +20,24 @@ int FCFS_COMPARE(const void * a, const void * b)
 {
 	return (1);
 }
-int SFJ_COMPARE(const void * a, const void * b)
+int SJF_COMPARE(const void * a, const void * b)
 {
 	return ( (*(job_t*)a).process_time - (*(job_t*)b).process_time );
 }
 int PRI_COMPARE(const void * a, const void * b)
 {
-  return ( (*(job_t*)b).priority - (*(job_t*)a).priority );
+  int compare = ( (*(job_t*)b).priority - (*(job_t*)a).priority );
+
+  if(compare == 0)
+  {
+    return (*(job_t *)a).arrival_time - (*(job_t *)b).arrival_time;
+
+  }
+  else
+  {
+    return(compare);
+
+  }
 }
 
 /**
@@ -44,12 +55,34 @@ int PRI_COMPARE(const void * a, const void * b)
 void scheduler_start_up(int cores, scheme_t scheme)
 {
   type = scheme;
+
   num_cores = cores;
   turnaround_time = 0;
   wait_time = 0;
   response_time = 0;
+
   int num_jobs = 0;
 
+  core_arr = malloc(cores * sizeof(job_t));
+
+  int i;
+  for (i = 0; i < cores; i++)
+  {
+    core_arr[i] = NULL;
+  }
+
+  if (type == FCFS || type == RR)
+  {
+    priqueue_init(&q, FCFS_COMPARE);
+  }
+  else if (type == SJF || type == PSJF)
+  {
+    priqueue_init(&q, SJF_COMPARE);
+  }
+  else if (type == PRI || type == PPRI)
+  {
+    priqueue_init(&q, PRI_COMPARE);
+  }
 }
 
 
@@ -75,6 +108,30 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
+  int idle_core;
+  for(int i = 0; i < num_cores; i++)
+  {
+    if(core_arr[i] == NULL)
+    {
+      idle_core = i;
+    }
+    else
+    {
+      idle_core = -1;
+    }
+  }
+  if(idle_core == -1)
+  {
+
+  }
+  else if(type == PSJF)
+  {
+
+  }
+  else if(type == PPRI)
+  {
+
+  }
 	return -1;
 }
 
@@ -95,7 +152,24 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
+  //wait_time +=
+  //turnaround_time +=
+  //response_time +=
+  num_jobs++;
 	return -1;
+
+
+  free(core_arr[core_id]);
+  core_arr[core_id] = NULL;
+
+  if(priqueue_size(&q) != 0)
+  {
+
+  }
+  else
+  {
+    return(-1);
+  }
 }
 
 
@@ -127,7 +201,7 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
-	return 0.0;
+	return(wait_time/num_jobs);
 }
 
 
@@ -140,7 +214,7 @@ float scheduler_average_waiting_time()
  */
 float scheduler_average_turnaround_time()
 {
-	return 0.0;
+	return(turnaround_time/num_jobs);
 }
 
 
@@ -152,7 +226,7 @@ float scheduler_average_turnaround_time()
  */
 float scheduler_average_response_time()
 {
-	return 0.0;
+	return(response_time/num_jobs);
 }
 
 
@@ -164,7 +238,14 @@ float scheduler_average_response_time()
 */
 void scheduler_clean_up()
 {
-
+  for(int i = 0; i < num_cores; i++)
+  {
+    if(core_arr != NULL)
+    {
+      free(core_arr[i]);
+    }
+  }
+  free(core_arr);
 }
 
 

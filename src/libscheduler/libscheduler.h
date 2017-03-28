@@ -16,11 +16,14 @@ typedef struct _job_t
   int running_time;
   int priority;
   int process_time;
+  int arrival_time;
   int pid;
 } job_t;
 
 int num_cores;
 int num_jobs;
+job_t **core_arr;
+
 scheme_t type;
 float turnaround_time;
 float wait_time;
