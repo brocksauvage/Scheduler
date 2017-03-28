@@ -4,11 +4,30 @@
 #ifndef LIBSCHEDULER_H_
 #define LIBSCHEDULER_H_
 
+
+
 /**
   Constants which represent the different scheduling algorithms
 */
 typedef enum {FCFS = 0, SJF, PSJF, PRI, PPRI, RR} scheme_t;
 
+typedef struct _job_t
+{
+  int running_time;
+  int priority;
+  int process_time;
+  int arrival_time;
+  int pid;
+} job_t;
+
+int num_cores;
+int num_jobs;
+job_t **core_arr;
+
+scheme_t type;
+float turnaround_time;
+float wait_time;
+float response_time;
 void  scheduler_start_up               (int cores, scheme_t scheme);
 int   scheduler_new_job                (int job_number, int time, int running_time, int priority);
 int   scheduler_job_finished           (int core_id, int job_number, int time);
