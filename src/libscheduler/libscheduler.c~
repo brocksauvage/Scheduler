@@ -36,10 +36,9 @@ int PRI_COMPARE(const void * a, const void * b)
 
 int num_cores;
 scheme_t scheme_type;
-**core_arr;
 priqueue_t queue;
 
-  int compare = ( (*(job_t*)b).priority - (*(job_t*)a).priority );
+  int compare = ( (*(job_t*)).priority - (*(job_t*)a).priority );
 
   if(compare == 0)
   {
@@ -98,7 +97,6 @@ void scheduler_start_up(int cores, scheme_t scheme)
   {
     priqueue_init(&q, PRI_COMPARE);
   }
->>>>>>> 3f8d4d13a276610383f07c6620b388cb6f301328
 }
 
 

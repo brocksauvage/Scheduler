@@ -26,19 +26,6 @@ int SJF_COMPARE(const void * a, const void * b)
 }
 int PRI_COMPARE(const void * a, const void * b)
 {
-
-	int pid;
-	int priority;
-	int arrival;
-	int burst_time;
-	int response_time;
-} job_t;
-
-int num_cores;
-scheme_t scheme_type;
-**core_arr;
-priqueue_t queue;
-
   int compare = ( (*(job_t*)b).priority - (*(job_t*)a).priority );
 
   if(compare == 0)
@@ -52,7 +39,6 @@ priqueue_t queue;
 
   }
 }
-
 
 /**
   Initalizes the scheduler.
@@ -68,9 +54,8 @@ priqueue_t queue;
 */
 void scheduler_start_up(int cores, scheme_t scheme)
 {
+  type = scheme;
 
-	
-	scheme_type = scheme;
   num_cores = cores;
   turnaround_time = 0;
   wait_time = 0;
@@ -167,19 +152,21 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
-  //wait_time +=
-  //turnaround_time +=
-  //response_time +=
+	job_t *curr_job = core_arr[core_id];
+
+  wait_time += time - (curr_job->process_time) - (curr_job->arrival_time);
+  turnaround_time += time - (curr_job->arrival_time);
+  response_time += curr_job->response_time;
   num_jobs++;
-	return -1;
 
-
-  free(core_arr[core_id]);
-  core_arr[core_id] = NULL;
+  free(curr_job);
+  curr_job = NULL;
 
   if(priqueue_size(&q) != 0)
   {
-
+		job_t *temp_job = (job_t*)priqueue_poll(&q);
+		core_arr[core_id] = curr_job;
+		return(curr_job->pid);
   }
   else
   {
@@ -203,7 +190,23 @@ int scheduler_job_finished(int core_id, int job_number, int time)
  */
 int scheduler_quantum_expired(int core_id, int time)
 {
-	return -1;
+	job_t* curr_job = core_arr[core_id];
+
+	if(curr_job == NULL && priqueue_size(&q) == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		priqueue_offer(&q, curr_job);
+	}
+	curr_job = priqueue_poll(&q);
+	if(curr_job->response_time == -1)
+	{
+		curr_job->response_time = time - curr_job->arrival_time;
+	}
+	core_arr[core_id] = curr_job;
+	return (curr_job->pid);
 }
 
 

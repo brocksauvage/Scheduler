@@ -13,6 +13,7 @@ typedef enum {FCFS = 0, SJF, PSJF, PRI, PPRI, RR} scheme_t;
 
 typedef struct _job_t
 {
+	int response_time;
   int running_time;
   int priority;
   int process_time;
