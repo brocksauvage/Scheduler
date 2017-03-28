@@ -73,7 +73,7 @@ int priqueue_offer(priqueue_t *q, void *ptr)
 		p_node_t *temp2 = q->front;
 		//Interate through the queue
 		while(temp != NULL)
-		{	
+		{
 			//compare for higher priority
 			if(q->comparer((ptr), (temp->job)) < 0)
 			{
