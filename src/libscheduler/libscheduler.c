@@ -132,7 +132,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   if(idle_core == -1)
   {
 		core_arr[idle_core] = old_job;
-		core_arr[idle_core]->response_time = time = core_arr[idle_core]->arrival_time;
+		core_arr[idle_core]->jresponse_time = time = core_arr[idle_core]->arrival_time;
 
 		if(type == PSJF)
 		{
@@ -157,13 +157,13 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 		}
 		if(running_time < longest_time)
 		{
-			if(core_arr[longest_index]->response_time == (time - core_arr[longest_index]->arrival_time))
+			if(core_arr[longest_index]->jresponse_time == (time - core_arr[longest_index]->arrival_time))
 			{
-				core_arr[longest_index]->response_time = -1;
+				core_arr[longest_index]->jresponse_time = -1;
 			}
 			priqueue_offer(&q, core_arr[longest_index]);
 			core_arr[longest_index] = old_job;
-			if(core_arr[longest_index]->response_time == -1)
+			if(core_arr[longest_index]->jresponse_time == -1)
 			{
 				core_arr[longest_index] = time - core_arr[longest_index]->arrival_time;
 			}
@@ -190,15 +190,15 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 
 	  if(lowest_priority > old_job->priority)
 	  {
-	   if(core_arr[lowest_core]->response_time == time - core_arr[lowest_core]->arrival_time)
+	   if(core_arr[lowest_core]->jresponse_time == time - core_arr[lowest_core]->arrival_time)
 	   {
-	     core_arr[lowest_core]->response_time = -1;
+	     core_arr[lowest_core]->jresponse_time = -1;
 	   }
      priqueue_offer(&q, core_arr[lowest_core]);
      core_arr[lowest_core] = old_job;
-     if(core_arr[lowest_core]->response_time == -1)
+     if(core_arr[lowest_core]->jresponse_time == -1)
      {
-      core_arr[lowest_core]->response_time = time - core_arr[lowest_core]->arrival_time;
+      core_arr[lowest_core]->jresponse_time = time - core_arr[lowest_core]->arrival_time;
 	   }
 
 	    return lowest_core;
@@ -230,7 +230,7 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 	job_t *curr_job = core_arr[core_id];
   wait_time += time - (curr_job->process_time) - (curr_job->arrival_time);
   turnaround_time += time - (curr_job->arrival_time);
-  response_time += curr_job->response_time;
+  response_time += curr_job->jresponse_time;
   num_jobs++;
 
   free(curr_job);
@@ -275,9 +275,9 @@ int scheduler_quantum_expired(int core_id, int time)
 		priqueue_offer(&q, curr_job);
 	}
 	curr_job = priqueue_poll(&q);
-	if(curr_job->response_time == -1)
+	if(curr_job->jresponse_time == -1)
 	{
-		curr_job->response_time = time - curr_job->arrival_time;
+		curr_job->jresponse_time = time - curr_job->arrival_time;
 	}
 	core_arr[core_id] = curr_job;
 	return (curr_job->pid);
