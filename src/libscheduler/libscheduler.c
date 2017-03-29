@@ -109,8 +109,11 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
+<<<<<<< HEAD
 	//printf("here\n");
 
+=======
+>>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 	job_t *new_job = malloc(num_cores * sizeof(job_t));
 
 	new_job->pid = job_number;
@@ -178,7 +181,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   else if(type == PPRI)
   {
 		int lowest_priority = core_arr[0]->priority;
-		int lowest_core;
+		int lowest_core = 0;
 		for(int i =0; i < num_cores; i++)
 		{
 
@@ -214,9 +217,13 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	  }
 
 	}
+<<<<<<< HEAD
 
 	   priqueue_offer(&q, new_job);
 
+=======
+	   priqueue_offer(&q, new_job);
+>>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 	   return -1;
 }
 
@@ -237,7 +244,10 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
+<<<<<<< HEAD
 	//printf("finished\n");
+=======
+>>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 
 	job_t *curr_job = core_arr[core_id];
 	printf("process times: ");
@@ -251,11 +261,22 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 
 
   free(curr_job);
+<<<<<<< HEAD
+=======
+  //curr_job = NULL;
+>>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 
   if(priqueue_size(&q) != 0)
   {
 		job_t *temp_job = (job_t*)priqueue_poll(&q);
 
+<<<<<<< HEAD
+=======
+		if(type == PSJF)
+		{
+			temp_job->prev_time = time;
+		}
+>>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 		if(temp_job->isRun == 0)
 		{
 			temp_job->isRun = 1;
@@ -317,10 +338,13 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
+<<<<<<< HEAD
 //	printf("%d", wait_time);
 //	printf("\n");
 //	printf("%d", );
 //	printf("\n");
+=======
+>>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 	return(wait_time/num_jobs);
 }
 
