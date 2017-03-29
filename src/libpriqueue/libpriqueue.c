@@ -148,9 +148,10 @@ void *priqueue_poll(priqueue_t *q)
 	{
 		p_node_t *temp = q->front;
 		q->front = q->front->next;
+		void *tempval = temp->job;
 		free(temp);
 		q->size--;
-		return (q->front->job);
+		return (tempval);
 	}
 }
 
