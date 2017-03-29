@@ -47,10 +47,7 @@ int REMAINING_TIME(const void * a, const void * b)
 /**
   Initalizes the scheduler.
 
-  Assumptions:
-    - You may assume this will be the first scheduler function called.
-    - You may assume this function will be called once once.
-    - You may assume that cores is a positive, non-zero number.
+  Assumptions:DIAGRAM:at cores is a positive, non-zero number.
     - You may assume that scheme is a valid scheduling scheme.
 
   @param cores the number of cores that is available by the scheduler. These cores will be known as core(id=0), core(id=1), ..., core(id=cores-1).
@@ -112,7 +109,7 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
-	printf("here");
+	//printf("here\n");
 
 	job_t *new_job = malloc(num_cores * sizeof(job_t));
 
@@ -155,6 +152,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 		{
 			core_arr[i]->process_time = core_arr[i]->process_time - (time - core_arr[i]->prev_time);
 			core_arr[i]->prev_time = time;
+
 			if(core_arr[i]->process_time > longest_time)
 			{
 				longest_time = core_arr[i]->process_time;
@@ -216,10 +214,8 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	  }
 
 	}
-	printf("here\n");
 
 	   priqueue_offer(&q, new_job);
-		 printf("here too\n");
 
 	   return -1;
 }
@@ -241,20 +237,25 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
-	printf("finished\n");
+	//printf("finished\n");
 
 	job_t *curr_job = core_arr[core_id];
-  wait_time += time - (curr_job->process_time) - (curr_job->arrival_time);
+	printf("process times: ");
+	printf("%d", curr_job->process_time);
+	printf("\n");
+
+  wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
   turnaround_time += time - (curr_job->arrival_time);
   response_time += curr_job->jresponse_time;
   num_jobs++;
 
+
   free(curr_job);
-  //curr_job = NULL;
-	printf("finished2\n");
+
   if(priqueue_size(&q) != 0)
   {
 		job_t *temp_job = (job_t*)priqueue_poll(&q);
+
 		if(temp_job->isRun == 0)
 		{
 			temp_job->isRun = 1;
@@ -316,6 +317,10 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
+//	printf("%d", wait_time);
+//	printf("\n");
+//	printf("%d", );
+//	printf("\n");
 	return(wait_time/num_jobs);
 }
 
