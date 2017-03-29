@@ -19,7 +19,7 @@ typedef struct _job_t
   int arrival_time;
   int jresponse_time;
   int prev_time;
-	int isRun;
+	int scheduled;
 	int latency;
 //  int initial_time;
   int pid;

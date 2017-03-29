@@ -118,7 +118,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	new_job->arrival_time = time;
 	new_job->priority = priority;
 	new_job->jresponse_time = -1;
-	new_job->isRun = 0;
+	new_job->scheduled = 0;
   int idle_core;
 
   for(int i = 0; i < num_cores; i++)
@@ -135,7 +135,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   }
   if(idle_core >= 0)
   {
-		new_job->isRun = 1;
+		new_job->scheduled = 1;
 		core_arr[idle_core] = new_job;
 		core_arr[idle_core]->jresponse_time = time - core_arr[idle_core]->arrival_time;
 		if(type == PSJF)
@@ -163,17 +163,16 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 		{
 			if(core_arr[longest_index]->jresponse_time == (time - core_arr[longest_index]->arrival_time))
 			{
-				printf("Reponse time = -1\n");
 				core_arr[longest_index]->jresponse_time = -1;
 			}
 			priqueue_offer(&q, core_arr[longest_index]);
+			core_arr[longest_index] = new_job;
 			if(new_job->jresponse_time == -1)
 			{
-				printf("Reponse time 1\n");
 				new_job->jresponse_time = time - core_arr[longest_index]->arrival_time;
 				new_job->latency = time - core_arr[longest_index]->arrival_time;
 			}
-			core_arr[longest_index] = new_job;
+
 			return(longest_index);
 		}
   }
@@ -216,7 +215,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	  }
 
 	}
-
+		 new_job->scheduled = 1;
 	   priqueue_offer(&q, new_job);
 	   return -1;
 }
@@ -243,7 +242,9 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 
   wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
   turnaround_time += time - (curr_job->arrival_time);
-  response_time += curr_job->jresponse_time;
+
+
+	response_time += curr_job->jresponse_time;
 	total_latency += curr_job->latency;
 	printf("%f", response_time);
   printf("\n");
@@ -260,11 +261,7 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 		{
 			temp_job->prev_time = time;
 		}
-		/*if(temp_job->isRun == 0)
-		{
-			temp_job->isRun = 1;
-			temp_job->jresponse_time = time - temp_job->arrival_time;
-		}*/
+	
 		if(temp_job->jresponse_time == -1)
 		{
 			temp_job->jresponse_time = time - temp_job->arrival_time;
