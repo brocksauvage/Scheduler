@@ -244,7 +244,7 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 	printf("finished\n");
 
 	job_t *curr_job = core_arr[core_id];
-  wait_time += time - (curr_job->process_time) - (curr_job->arrival_time);
+  wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
   turnaround_time += time - (curr_job->arrival_time);
   response_time += curr_job->jresponse_time;
   num_jobs++;
@@ -316,6 +316,7 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
+	printf("%f ", wait_time);
 	return(wait_time/num_jobs);
 }
 
