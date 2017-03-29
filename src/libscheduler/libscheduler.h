@@ -20,6 +20,7 @@ typedef struct _job_t
   int jresponse_time;
   int prev_time;
 	int isRun;
+	int latency;
 //  int initial_time;
   int pid;
 } job_t;
@@ -32,6 +33,7 @@ scheme_t type;
 float turnaround_time;
 float wait_time;
 float response_time;
+float total_latency;
 void  scheduler_start_up               (int cores, scheme_t scheme);
 int   scheduler_new_job                (int job_number, int time, int running_time, int priority);
 int   scheduler_job_finished           (int core_id, int job_number, int time);
