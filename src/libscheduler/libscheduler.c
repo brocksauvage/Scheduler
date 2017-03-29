@@ -112,8 +112,6 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
-	printf("here");
-
 	job_t *new_job = malloc(num_cores * sizeof(job_t));
 
 	new_job->pid = job_number;
@@ -180,7 +178,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   else if(type == PPRI)
   {
 		int lowest_priority = core_arr[0]->priority;
-		int lowest_core;
+		int lowest_core = 0;
 		for(int i =0; i < num_cores; i++)
 		{
 
@@ -216,11 +214,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	  }
 
 	}
-	printf("here\n");
-
 	   priqueue_offer(&q, new_job);
-		 printf("here too\n");
-
 	   return -1;
 }
 
@@ -241,7 +235,6 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
-	printf("finished\n");
 
 	job_t *curr_job = core_arr[core_id];
   wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
@@ -251,10 +244,15 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 
   free(curr_job);
   //curr_job = NULL;
-	printf("finished2\n");
+
   if(priqueue_size(&q) != 0)
   {
 		job_t *temp_job = (job_t*)priqueue_poll(&q);
+
+		if(type == PSJF)
+		{
+			temp_job->prev_time = time;
+		}
 		if(temp_job->isRun == 0)
 		{
 			temp_job->isRun = 1;
@@ -316,7 +314,6 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
-	printf("%f ", wait_time);
 	return(wait_time/num_jobs);
 }
 
