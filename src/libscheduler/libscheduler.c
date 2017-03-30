@@ -109,11 +109,7 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
-<<<<<<< HEAD
-	//printf("here\n");
 
-=======
->>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 	job_t *new_job = malloc(num_cores * sizeof(job_t));
 
 	new_job->pid = job_number;
@@ -121,6 +117,7 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	new_job->process_time = running_time;
 	new_job->arrival_time = time;
 	new_job->priority = priority;
+	new_job->jresponse_time = 0;
 	new_job->isRun = 0;
   int idle_core;
   for(int i = 0; i < num_cores; i++)
@@ -217,13 +214,9 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	  }
 
 	}
-<<<<<<< HEAD
-
 	   priqueue_offer(&q, new_job);
 
-=======
-	   priqueue_offer(&q, new_job);
->>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
+
 	   return -1;
 }
 
@@ -244,10 +237,8 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
-<<<<<<< HEAD
-	//printf("finished\n");
-=======
->>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
+
+
 
 	job_t *curr_job = core_arr[core_id];
 	printf("process times: ");
@@ -261,22 +252,18 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 
 
   free(curr_job);
-<<<<<<< HEAD
-=======
+
   //curr_job = NULL;
->>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 
   if(priqueue_size(&q) != 0)
   {
 		job_t *temp_job = (job_t*)priqueue_poll(&q);
 
-<<<<<<< HEAD
-=======
+
 		if(type == PSJF)
 		{
 			temp_job->prev_time = time;
 		}
->>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
 		if(temp_job->isRun == 0)
 		{
 			temp_job->isRun = 1;
@@ -311,7 +298,7 @@ int scheduler_quantum_expired(int core_id, int time)
 {
 	job_t* curr_job = core_arr[core_id];
 
-	if(curr_job == NULL && priqueue_size(&q) == 0)
+	if(curr_job == NULL && priqueue_size(&q) == -1)
 	{
 		return -1;
 	}
@@ -320,7 +307,7 @@ int scheduler_quantum_expired(int core_id, int time)
 		priqueue_offer(&q, curr_job);
 	}
 	curr_job = priqueue_poll(&q);
-	if(curr_job->jresponse_time == -1)
+	if(curr_job->jresponse_time == 0)
 	{
 		curr_job->jresponse_time = time - curr_job->arrival_time;
 	}
@@ -338,13 +325,7 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
-<<<<<<< HEAD
-//	printf("%d", wait_time);
-//	printf("\n");
-//	printf("%d", );
-//	printf("\n");
-=======
->>>>>>> aba88da467dc4d6e0d605b465f8aacb47bf1b5c5
+
 	return(wait_time/num_jobs);
 }
 
