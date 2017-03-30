@@ -11,6 +11,10 @@
 */
 typedef enum {FCFS = 0, SJF, PSJF, PRI, PPRI, RR} scheme_t;
 
+/**
+	A job structure containing all of the elements and variables that will
+	be contained in a single job.
+*/
 typedef struct _job_t
 {
   int running_time;
@@ -25,15 +29,25 @@ typedef struct _job_t
   int pid;
 } job_t;
 
-int num_cores;
-int num_jobs;
-job_t **core_arr;
+/**
+	A structure for all of the global variables that will represent
+	metrics for the scheduler
+*/
+typedef struct _scheduler_metrics_t
+{
+	int num_cores;
+	int num_jobs;
+	job_t **core_arr;
+	scheme_t type;
+	float turnaround_time;
+	float wait_time;
+	float response_time;
+	float total_latency;
+}scheduler_metrics_t;
 
-scheme_t type;
-float turnaround_time;
-float wait_time;
-float response_time;
-float total_latency;
+/**
+	Functions that will be used in the scheduler
+*/
 void  scheduler_start_up               (int cores, scheme_t scheme);
 int   scheduler_new_job                (int job_number, int time, int running_time, int priority);
 int   scheduler_job_finished           (int core_id, int job_number, int time);

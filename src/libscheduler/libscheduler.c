@@ -15,6 +15,8 @@ priqueue_t q;
   You may need to define some global variables or a struct to store your job queue elements.
 */
 
+//A globally declared structure that contains variables necessary for computing metrics.
+scheduler_metrics_t s;
 
 int FCFS_COMPARE(const void * a, const void * b)
 {
@@ -55,32 +57,31 @@ int PRI_COMPARE(const void * a, const void * b)
 */
 void scheduler_start_up(int cores, scheme_t scheme)
 {
-  type = scheme;
+  s.type = scheme;
+  s.num_cores = cores;
+  s.turnaround_time = 0.0;
+  s.wait_time = 0.0;
+  s.response_time = 0.0;
 
-  num_cores = cores;
-  turnaround_time = 0.0;
-  wait_time = 0.0;
-  response_time = 0.0;
+  s.num_jobs = 0;
 
-  num_jobs = 0;
-
-  core_arr = malloc(cores * sizeof(job_t));
+  s.core_arr = malloc(cores * sizeof(job_t));
 
   int i;
   for (i = 0; i < cores; i++)
   {
-    core_arr[i] = NULL;
+    s.core_arr[i] = NULL;
   }
 
-  if (type == FCFS || type == RR)
+  if (s.type == FCFS || s.type == RR)
   {
     priqueue_init(&q, FCFS_COMPARE);
   }
-  else if (type == SJF || type == PSJF)
+  else if (s.type == SJF || s.type == PSJF)
   {
     priqueue_init(&q, SJF_COMPARE);
   }
-  else if (type == PRI || type == PPRI)
+  else if (s.type == PRI || s.type == PPRI)
   {
     priqueue_init(&q, PRI_COMPARE);
   }
@@ -109,7 +110,7 @@ void scheduler_start_up(int cores, scheme_t scheme)
  */
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
-	job_t *new_job = malloc(num_cores * sizeof(job_t));
+	job_t *new_job = malloc(s.num_cores * sizeof(job_t));
 
 	new_job->pid = job_number;
 	new_job->running_time = running_time;
@@ -121,9 +122,9 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	new_job->scheduled = 0;
   int idle_core;
 
-  for(int i = 0; i < num_cores; i++)
+  for(int i = 0; i < s.num_cores; i++)
   {
-    if(core_arr[i] == NULL)
+    if(s.core_arr[i] == NULL)
     {
       idle_core = i;
 			break;
@@ -136,61 +137,61 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   if(idle_core >= 0)
   {
 		new_job->scheduled = 1;
-		core_arr[idle_core] = new_job;
-		core_arr[idle_core]->jresponse_time = time - core_arr[idle_core]->arrival_time;
-		if(type == PSJF)
+		s.core_arr[idle_core] = new_job;
+		s.core_arr[idle_core]->jresponse_time = time - s.core_arr[idle_core]->arrival_time;
+		if(s.type == PSJF)
 		{
-			core_arr[idle_core]->prev_time = time;
+			s.core_arr[idle_core]->prev_time = time;
 		}
 		return(idle_core);
   }
-  else if(type == PSJF)
+  else if(s.type == PSJF)
   {
 		int longest_time = -1;
 		int longest_index = -1;
-		for(int i = 0; i < num_cores; i ++)
+		for(int i = 0; i < s.num_cores; i ++)
 		{
-			core_arr[i]->process_time = core_arr[i]->process_time - (time - core_arr[i]->prev_time);
-			core_arr[i]->prev_time = time;
-			if(core_arr[i]->process_time > longest_time)
+			s.core_arr[i]->process_time = s.core_arr[i]->process_time - (time - s.core_arr[i]->prev_time);
+			s.core_arr[i]->prev_time = time;
+			if(s.core_arr[i]->process_time > longest_time)
 			{
-				longest_time = core_arr[i]->process_time;
+				longest_time = s.core_arr[i]->process_time;
 				longest_index = i;
 			}
 
 		}
 		if(new_job->process_time < longest_time)
 		{
-			if(core_arr[longest_index]->jresponse_time == (time - core_arr[longest_index]->arrival_time))
+			if(s.core_arr[longest_index]->jresponse_time == (time - s.core_arr[longest_index]->arrival_time))
 			{
-				core_arr[longest_index]->jresponse_time = -1;
+				s.core_arr[longest_index]->jresponse_time = -1;
 			}
-			priqueue_offer(&q, core_arr[longest_index]);
-			core_arr[longest_index] = new_job;
+			priqueue_offer(&q, s.core_arr[longest_index]);
+			s.core_arr[longest_index] = new_job;
 			if(new_job->jresponse_time == -1)
 			{
-				new_job->jresponse_time = time - core_arr[longest_index]->arrival_time;
-				new_job->latency = time - core_arr[longest_index]->arrival_time;
+				new_job->jresponse_time = time - s.core_arr[longest_index]->arrival_time;
+				new_job->latency = time - s.core_arr[longest_index]->arrival_time;
 			}
 
 			return(longest_index);
 		}
   }
-  else if(type == PPRI)
+  else if(s.type == PPRI)
   {
-		int lowest_priority = core_arr[0]->priority;
+		int lowest_priority = s.core_arr[0]->priority;
 		int lowest_core = 0;
-		for(int i =0; i < num_cores; i++)
+		for(int i =0; i < s.num_cores; i++)
 		{
 
-			if(core_arr[i]->priority > lowest_priority)
+			if(s.core_arr[i]->priority > lowest_priority)
 	    {
-	       lowest_priority = core_arr[i]->priority;
+	       lowest_priority = s.core_arr[i]->priority;
 	       lowest_core = i;
 	    }
-	    else if(core_arr[i]->priority == lowest_priority)
+	    else if(s.core_arr[i]->priority == lowest_priority)
 	    {
-				if(core_arr[i]->arrival_time > core_arr[lowest_core]->arrival_time)
+				if(s.core_arr[i]->arrival_time > s.core_arr[lowest_core]->arrival_time)
 				{
 	       lowest_core = i;
 			 	}
@@ -200,15 +201,15 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 	  if(lowest_priority > new_job->priority)
 	  {
 
-	   if(core_arr[lowest_core]->jresponse_time == time - core_arr[lowest_core]->arrival_time)
+	   if(s.core_arr[lowest_core]->jresponse_time == time - s.core_arr[lowest_core]->arrival_time)
 	   {
-	     core_arr[lowest_core]->jresponse_time = -1;
+	     s.core_arr[lowest_core]->jresponse_time = -1;
 	   }
-     priqueue_offer(&q, core_arr[lowest_core]);
-     core_arr[lowest_core] = new_job;
-     if(core_arr[lowest_core]->jresponse_time == -1)
+     priqueue_offer(&q, s.core_arr[lowest_core]);
+     s.core_arr[lowest_core] = new_job;
+     if(s.core_arr[lowest_core]->jresponse_time == -1)
      {
-      core_arr[lowest_core]->jresponse_time = time - core_arr[lowest_core]->arrival_time;
+      s.core_arr[lowest_core]->jresponse_time = time - s.core_arr[lowest_core]->arrival_time;
 	   }
 
 	    return lowest_core;
@@ -238,17 +239,17 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
 
-	job_t *curr_job = core_arr[core_id];
+	job_t *curr_job = s.core_arr[core_id];
 
-  wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
-  turnaround_time += time - (curr_job->arrival_time);
+  s.wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
+  s.turnaround_time += time - (curr_job->arrival_time);
 
 
-	response_time += curr_job->jresponse_time;
-	total_latency += curr_job->latency;
-	printf("%f", response_time);
+	s.response_time += curr_job->jresponse_time;
+	s.total_latency += curr_job->latency;
+	printf("%f", s.response_time);
   printf("\n");
-  num_jobs++;
+  s.num_jobs++;
 
   free(curr_job);
   curr_job = NULL;
@@ -257,7 +258,7 @@ int scheduler_job_finished(int core_id, int job_number, int time)
   {
 		job_t *temp_job = (job_t*)priqueue_poll(&q);
 
-		if(type == PSJF)
+		if(s.type == PSJF)
 		{
 			temp_job->prev_time = time;
 		}
@@ -267,12 +268,12 @@ int scheduler_job_finished(int core_id, int job_number, int time)
 			temp_job->jresponse_time = time - temp_job->arrival_time;
 			printf("Reponse time \n");
 		}
-		core_arr[core_id] = temp_job;
+		s.core_arr[core_id] = temp_job;
 		return(temp_job->pid);
   }
   else
   {
-		core_arr[core_id] = NULL;
+		s.core_arr[core_id] = NULL;
     return(-1);
   }
 }
@@ -293,7 +294,7 @@ int scheduler_job_finished(int core_id, int job_number, int time)
  */
 int scheduler_quantum_expired(int core_id, int time)
 {
-	job_t* curr_job = core_arr[core_id];
+	job_t* curr_job = s.core_arr[core_id];
 
 	if(curr_job == NULL)
 	{
@@ -306,16 +307,16 @@ int scheduler_quantum_expired(int core_id, int time)
 	{
 		priqueue_offer(&q, curr_job);
 	}
-	core_arr[core_id] = priqueue_poll(&q);
-	if(core_arr[core_id]->jresponse_time == -1)
+	s.core_arr[core_id] = priqueue_poll(&q);
+	if(s.core_arr[core_id]->jresponse_time == -1)
 	{
-		core_arr[core_id]->jresponse_time = time - core_arr[core_id]->arrival_time;
+		s.core_arr[core_id]->jresponse_time = time - s.core_arr[core_id]->arrival_time;
 		printf("Quantum: ");
 		printf("%d", curr_job->jresponse_time);
 		printf("\n");
 	}
 
-	return (core_arr[core_id]->pid);
+	return (s.core_arr[core_id]->pid);
 }
 
 
@@ -328,7 +329,7 @@ int scheduler_quantum_expired(int core_id, int time)
  */
 float scheduler_average_waiting_time()
 {
-	return(wait_time/num_jobs);
+	return(s.wait_time/s.num_jobs);
 }
 
 
@@ -341,7 +342,7 @@ float scheduler_average_waiting_time()
  */
 float scheduler_average_turnaround_time()
 {
-	return(turnaround_time/num_jobs);
+	return(s.turnaround_time/s.num_jobs);
 }
 
 
@@ -353,7 +354,7 @@ float scheduler_average_turnaround_time()
  */
 float scheduler_average_response_time()
 {
-	return(response_time/num_jobs);
+	return(s.response_time/s.num_jobs);
 }
 
 
@@ -365,14 +366,14 @@ float scheduler_average_response_time()
 */
 void scheduler_clean_up()
 {
-  for(int i = 0; i < num_cores; i++)
+  for(int i = 0; i < s.num_cores; i++)
   {
-    if(core_arr != NULL)
+    if(s.core_arr != NULL)
     {
-      free(core_arr[i]);
+      free(s.core_arr[i]);
     }
   }
-  free(core_arr);
+  free(s.core_arr);
 }
 
 
