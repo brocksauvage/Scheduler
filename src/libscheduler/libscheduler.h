@@ -20,13 +20,15 @@ typedef struct _job_t
   int jresponse_time;
   int prev_time;
 	int scheduled;
-	int latency;
-//  int initial_time;
   int pid;
 } job_t;
 
 int num_cores;
 int num_jobs;
+int longest_time;
+int longest_index;
+int lowest_priority;
+int lowest_core;
 job_t **core_arr;
 
 scheme_t type;

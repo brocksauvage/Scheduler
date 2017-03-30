@@ -104,26 +104,56 @@ void scheduler_start_up(int cores, scheme_t scheme)
   @return -1 if no scheduling changes should be made.
 
  */
+void longest_time_search(int time)
+{
+	longest_time = -1;
+	longest_index = -1;
+	for(int i = 0; i < num_cores; i ++)
+	{
+		core_arr[i]->process_time = core_arr[i]->process_time - (time - core_arr[i]->prev_time);
+		core_arr[i]->prev_time = time;
+
+		if(core_arr[i]->process_time > longest_time)
+		{
+			longest_time = core_arr[i]->process_time;
+			longest_index = i;
+		}
+	}
+}
+void lowest_priority_search(int time)
+{
+	lowest_priority = core_arr[0]->priority;
+	lowest_core = 0;
+	for(int i =0; i < num_cores; i++)
+	{
+
+		if(core_arr[i]->priority > lowest_priority)
+		{
+			 lowest_priority = core_arr[i]->priority;
+			 lowest_core = i;
+		}
+		else if(core_arr[i]->priority == lowest_priority)
+		{
+			if(core_arr[i]->arrival_time > core_arr[lowest_core]->arrival_time)
+			{
+			 lowest_core = i;
+			}
+		}
+	}
+}
 int scheduler_new_job(int job_number, int time, int running_time, int priority)
 {
 
 	job_t *new_job = malloc(num_cores * sizeof(job_t));
-
 	new_job->pid = job_number;
 	new_job->running_time = running_time;
 	new_job->process_time = running_time;
-	new_job->latency = 0;
 	new_job->arrival_time = time;
 	new_job->priority = priority;
-<<<<<<< HEAD
 	new_job->jresponse_time = 0;
-	new_job->isRun = 0;
-=======
 	new_job->jresponse_time = -1;
-	new_job->scheduled = 0;
->>>>>>> e44d63920e3055ac16bc432d4a2d3b80d311f8fb
-  int idle_core;
 
+  int idle_core;
   for(int i = 0; i < num_cores; i++)
   {
     if(core_arr[i] == NULL)
@@ -138,7 +168,6 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   }
   if(idle_core >= 0)
   {
-		new_job->scheduled = 1;
 		core_arr[idle_core] = new_job;
 		core_arr[idle_core]->jresponse_time = time - core_arr[idle_core]->arrival_time;
 		if(type == PSJF)
@@ -149,20 +178,8 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   }
   else if(type == PSJF)
   {
-		int longest_time = -1;
-		int longest_index = -1;
-		for(int i = 0; i < num_cores; i ++)
-		{
-			core_arr[i]->process_time = core_arr[i]->process_time - (time - core_arr[i]->prev_time);
-			core_arr[i]->prev_time = time;
 
-			if(core_arr[i]->process_time > longest_time)
-			{
-				longest_time = core_arr[i]->process_time;
-				longest_index = i;
-			}
-
-		}
+		longest_time_search(time);
 		if(new_job->process_time < longest_time)
 		{
 			if(core_arr[longest_index]->jresponse_time == (time - core_arr[longest_index]->arrival_time))
@@ -174,7 +191,6 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 			if(new_job->jresponse_time == -1)
 			{
 				new_job->jresponse_time = time - core_arr[longest_index]->arrival_time;
-				new_job->latency = time - core_arr[longest_index]->arrival_time;
 			}
 
 			return(longest_index);
@@ -182,26 +198,9 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
   }
   else if(type == PPRI)
   {
-		int lowest_priority = core_arr[0]->priority;
-		int lowest_core = 0;
-		for(int i =0; i < num_cores; i++)
-		{
 
-			if(core_arr[i]->priority > lowest_priority)
-	    {
-	       lowest_priority = core_arr[i]->priority;
-	       lowest_core = i;
-	    }
-	    else if(core_arr[i]->priority == lowest_priority)
-	    {
-				if(core_arr[i]->arrival_time > core_arr[lowest_core]->arrival_time)
-				{
-	       lowest_core = i;
-			 	}
-	    }
-	  }
-
-	  if(lowest_priority > new_job->priority)
+		lowest_priority_search(time);
+	  if(new_job->priority < lowest_priority)
 	  {
 
 	   if(core_arr[lowest_core]->jresponse_time == time - core_arr[lowest_core]->arrival_time)
@@ -217,13 +216,9 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
 
 	    return lowest_core;
 	  }
-
 	}
-		 new_job->scheduled = 1;
-	   priqueue_offer(&q, new_job);
-
-
-	   return -1;
+	priqueue_offer(&q, new_job);
+	return -1;
 }
 
 
@@ -243,50 +238,28 @@ int scheduler_new_job(int job_number, int time, int running_time, int priority)
  */
 int scheduler_job_finished(int core_id, int job_number, int time)
 {
-
-
-
 	job_t *curr_job = core_arr[core_id];
-<<<<<<< HEAD
-	printf("process times: ");
-	printf("%d", curr_job->process_time);
-	printf("\n");
-=======
->>>>>>> e44d63920e3055ac16bc432d4a2d3b80d311f8fb
 
   wait_time += time - (curr_job->running_time) - (curr_job->arrival_time);
   turnaround_time += time - (curr_job->arrival_time);
-
-
 	response_time += curr_job->jresponse_time;
-	total_latency += curr_job->latency;
-	printf("%f", response_time);
-  printf("\n");
   num_jobs++;
 
 
   free(curr_job);
-<<<<<<< HEAD
-
-  //curr_job = NULL;
-=======
   curr_job = NULL;
->>>>>>> e44d63920e3055ac16bc432d4a2d3b80d311f8fb
 
   if(priqueue_size(&q) != 0)
   {
 		job_t *temp_job = (job_t*)priqueue_poll(&q);
-
-
 		if(type == PSJF)
 		{
 			temp_job->prev_time = time;
 		}
-	
+
 		if(temp_job->jresponse_time == -1)
 		{
 			temp_job->jresponse_time = time - temp_job->arrival_time;
-			printf("Reponse time \n");
 		}
 		core_arr[core_id] = temp_job;
 		return(temp_job->pid);
@@ -316,11 +289,7 @@ int scheduler_quantum_expired(int core_id, int time)
 {
 	job_t* curr_job = core_arr[core_id];
 
-<<<<<<< HEAD
-	if(curr_job == NULL && priqueue_size(&q) == -1)
-=======
 	if(curr_job == NULL)
->>>>>>> e44d63920e3055ac16bc432d4a2d3b80d311f8fb
 	{
 		if(priqueue_size(&q) == 0)
 		{
@@ -331,20 +300,13 @@ int scheduler_quantum_expired(int core_id, int time)
 	{
 		priqueue_offer(&q, curr_job);
 	}
-<<<<<<< HEAD
-	curr_job = priqueue_poll(&q);
-	if(curr_job->jresponse_time == 0)
-=======
+
 	core_arr[core_id] = priqueue_poll(&q);
+
 	if(core_arr[core_id]->jresponse_time == -1)
->>>>>>> e44d63920e3055ac16bc432d4a2d3b80d311f8fb
 	{
 		core_arr[core_id]->jresponse_time = time - core_arr[core_id]->arrival_time;
-		printf("Quantum: ");
-		printf("%d", curr_job->jresponse_time);
-		printf("\n");
 	}
-
 	return (core_arr[core_id]->pid);
 }
 
